@@ -1,0 +1,11 @@
+{
+  "extends": "@jal-matsya/typescript-config/react-library.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "paths": {
+      "@jal-matsya/ui/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "*.mjs", "*.js"],
+  "exclude": ["node_modules", "dist"]
+}
