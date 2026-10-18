@@ -6,6 +6,11 @@ import { cn } from "@jal-matsya/ui/lib/utils"
 
 import type { Tone } from "./content"
 
+/** Prefix the deploy base path (e.g. /jal-matsya on GitHub Pages) onto /public files. */
+export function asset(path: string) {
+  return path.startsWith("/") ? `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${path}` : path
+}
+
 /* Fixed brand tints (not theme tokens): placeholders keep the same look in light
    and dark mode, the way a photo would. */
 const tones: Record<Tone, string> = {
@@ -41,7 +46,7 @@ export function Art({
   return (
     <div className={cn("relative overflow-hidden bg-linear-to-br", tones[tone], className)}>
       {image ? (
-        <Image src={image} alt={alt} fill sizes={sizes} className="object-cover" />
+        <Image src={asset(image)} alt={alt} fill sizes={sizes} className="object-cover" />
       ) : (
         <Icon
           aria-hidden

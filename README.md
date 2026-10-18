@@ -30,7 +30,7 @@ Monorepo for the Jal Matsya website: **Next.js 16 · React 19 · Tailwind CSS v4
 | Command                        | What it does                                                                                            |
 | ------------------------------ | ------------------------------------------------------------------------------------------------------- |
 | `yarn dev`                     | Run all apps in dev mode (web → http://localhost:3000)                                                  |
-| `yarn build`                   | Production build                                                                                        |
+| `yarn build`                   | Static export of the site to `apps/web/out` (deployed to GitHub Pages)                                  |
 | `yarn lint` / `yarn typecheck` | Lint / typecheck every workspace                                                                        |
 | `yarn clean`                   | Full reset: delete build artifacts and all `node_modules` (then `yarn install`); `--dry-run` to preview |
 | `yarn format`                  | Prettier (sorts Tailwind classes too)                                                                   |
@@ -94,3 +94,31 @@ needs to be declared in `turbo.json`.
 - `.env*` files are Turborepo `inputs` for `build` and `lint`, so changing a value invalidates the cache.
 - If a variable will come from the shell or CI instead of a file, add it to `env` on the `build` task in
   `turbo.json` — Turborepo's strict mode filters out undeclared shell variables.
+
+## Deployment (GitHub Pages)
+
+The site is a static export (`output: "export"` in `apps/web/next.config.ts`), so it runs on
+GitHub Pages without a Node server. `.github/workflows/deploy.yml` handles CI/CD:
+
+- **Pull requests:** install, lint, typecheck and build. Nothing is deployed.
+- **Push to `main`** (or **Run workflow** in the Actions tab): the same checks, then
+  `apps/web/out` is published to GitHub Pages.
+
+**One-time setup:** in the GitHub repo, open **Settings → Pages → Build and deployment** and set
+**Source** to **GitHub Actions**. The site is then served at
+`https://udaypawar.github.io/jal-matsya/`.
+
+**Base path:** project sites live under `/<repo>`. CI reads it from `actions/configure-pages` and
+passes it to the build as `PAGES_BASE_PATH`, so links, CSS and JS get the prefix automatically.
+Local files in `public/` referenced from code (e.g. photos) must go through `asset()` from
+`components/home/art.tsx`, because `next/image` does not add the prefix to them. With a custom
+domain the base path becomes empty and nothing else needs to change.
+
+**Preview the export locally:**
+
+```sh
+yarn build
+python3 -m http.server 4000 -d apps/web/out   # http://localhost:4000
+```
+
+`yarn start` (`next start`) does not work with a static export; use the command above instead.
